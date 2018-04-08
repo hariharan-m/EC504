@@ -1,5 +1,6 @@
 # --*-- coding:utf-8 --*--  
 import numpy as np
+import queue as Q
 
 class Node:  
     def __init__(self, data, lchild = None, rchild = None):  
@@ -79,14 +80,57 @@ class KdTree:
                     else:  
                         travel(node.lchild, depth + 1)  
         travel(tree)  
-        return self.nearestPoint  
+        return self.nearestPoint
+
+    def Ksearch(self, tree, x, k):  # k nearst neighbors search
+        que = Q.PriorityQueue()
+        res = []
+
+        def travel(node, depth = 0):    #recurse search  
+            if node != None:    #base case
+                distNodeAndX = self.dist(x, node.data)
+
+                if (que.qsize() < k):
+                    que.put((-distNodeAndX,node.data))
+                else:
+                    temp = que.get()
+                    if (temp[0] < -distNodeAndX):
+                        que.put((-distNodeAndX,node.data))
+                    else:
+                        que.put(temp)
+
+                n = len(x)    
+                axis = depth % n   
+                if x[axis] < node.data[axis]:     
+                    travel(node.lchild, depth+1)  
+                else:  
+                    travel(node.rchild, depth+1)  
+
+                temp = que.get()
+                que.put(temp)  
+                if abs(x[axis] - node.data[axis]) <= abs(temp[0]) or que.qsize() < k:  #find whether there is closer point by using radius   
+                    if x[axis] < node.data[axis]:  
+                        travel(node.rchild, depth+1)  
+                    else:  
+                        travel(node.lchild, depth + 1)  
+        travel(tree)
+        while not que.empty():
+            res.append(que.get()[1])
+        return res
+
   
     def dist(self, x1, x2): #calculate Euclidean distance  
         return ((np.array(x1) - np.array(x2)) ** 2).sum() ** 0.5  
-  
-dataSet = [[2, 3, 7], [5, 4, 9], [9, 6, 5], [4, 7, 1], [8, 1, 2], [7, 2, 5]]  
-x = [5, 3, 2]  
+    
+
+
+
+# dataSet = [[2, 3, 7], [5, 4, 9], [9, 6, 5], [4, 7, 1], [8, 1, 2], [7, 2, 5]]  
+# x = [5, 3, 2]
+dataSet = [[2, 3], [5, 4], [9, 6], [4, 7], [8, 1], [7, 2]]  
+x = [5, 3]    
 kdtree = KdTree()  
 tree = kdtree.create(dataSet, 0)  
 kdtree.preOrder(tree)
-print("The NN of " + str(x) + " is " + str(kdtree.search(tree, x))) 
+print("The NN of " + str(x) + " is " + str(kdtree.search(tree, x)))
+print("The 3NN of " + str(x) + " is " + str(kdtree.Ksearch(tree, x, 3)))
