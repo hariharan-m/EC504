@@ -1,67 +1,37 @@
-
 import numpy
 import random
 import re
 import string
 import sys,os,signal
 from BitVector import *
-
-#-----------------------------------  Utility Functions  ------------------------------------
-
+#------------------------------LSH FUNCTION---------------------------------------
+#We assume the raw data stored with name sample0_0 or sample1_8
+#We store data with this name just for testing if the program works well
+#This function returns the second integer of our sample name
 def sample_index(sample_name):
-    '''
-    We assume that the raw data is stored in the following form:
-
-       sample0_0,0.951,-0.134,-0.102,0.079,0.12,0.123,-0.03,-0.078,0.036,0.138
-       sample0_1,1.041,0.057,0.095,0.026,-0.154,0.231,-0.074,0.005,0.055,0.14
-       ...
-       ...
-       sample1_8,-0.153,1.083,0.041,0.086,-0.059,0.042,-0.172,0.014,-0.153,0.091
-       sample1_9,0.051,1.122,-0.014,-0.117,0.015,-0.044,0.011,0.008,-0.121,-0.017
-       ...
-       ...
-
-    This function returns the second integer in the name of each data record.
-    It is useful for sorting the samples and for visualizing whether or not
-    the final clustering step is working correctly.
-    '''
     m = re.search(r'_(.+)$', sample_name)
     return int(m.group(1))
 
+#This function returns the first integer of our sample name
 def sample_group_index(sample_group_name):
-    '''
-    As the comment block for the previous function explains, the data sample
-    for LSH are supposed to have a symbolic name at the beginning of the 
-    comma separated string.  These symbolic names look like 'sample0_0', 
-    'sample3_4', etc., where the first element of the name, such as 'sample0',
-    indicates the group affiliation of the sample.  The purpose of this
-    function is to return just the integer part of the group name.
-    '''
     m = re.search(r'^.*(\d+)', sample_group_name)
     return int(m.group(1))
 
+#This function returns the index of the hashband
 def band_hash_group_index(block_name):
-    '''
-    The keys of the final output that is stored in the hash self.coalesced_band_hash
-    are strings that look like:
-
-         "block3 10110"
-
-    This function returns the block index, which is the integer that follows the 
-    word "block" in the first substring in the string that you see above.
-    '''
     firstitem = block_name.split()[0]
     m = re.search(r'(\d+)$', firstitem)
     return int(m.group(1))
 
-
+#This function covert int to float to match with sample features
 def convert(value):
     try:
         answer = float(value)
         return answer
     except:
         return value
-
+#calculate the L2-norm of two lists, use it to reduce the number of clusters
+#not use in mid-report yet
 def l2norm(list1, list2):
     return numpy.linalg.norm(numpy.array(list1) - numpy.array(list2))
 
@@ -73,9 +43,7 @@ signal.signal(signal.SIGINT, Ctrl_c_handler)
 class LocalitySensitiveHashing(object):
     def __init__(self, *args, **kwargs ):
         if kwargs and args:
-            raise Exception(  
-                   '''LocalitySensitiveHashing constructor can only be called with keyword arguments for the 
-                      following keywords: datafile,r,b,expected_num_of_clusters''') 
+            raise Exception('''please input the allowed_keys = 'datafile','dim','r','b','expected_num_of_clusters'''')
         allowed_keys = 'datafile','dim','r','b','expected_num_of_clusters'
         keywords_used = kwargs.keys()
         for keyword in keywords_used:
@@ -107,15 +75,15 @@ class LocalitySensitiveHashing(object):
         self.htable_rows  = {}
         self.index_to_hplane_mapping = {}
         self.band_hash = {}                      # BitVector column =>  bucket for samples  (for the AND action)
-        self.band_hash_mean_values = {}          # Store the mean of the bucket contents in band_hash dictionary
-        self.similarity_group_mean_values = {}
+        #self.band_hash_mean_values = {}          # Store the mean of the bucket contents in band_hash dictionary
+        #self.similarity_group_mean_values = {}
         self.coalesced_band_hash = {}            # Coalesce those keys of self.band_hash that have data samples in common
-        self.similarity_groups = []
-        self.coalescence_merged_similarity_groups = []  # Is a list of sets
-        self.l2norm_merged_similarity_groups = []  # Is a list of sets
-        self.merged_similarity_groups = None
-        self.pruned_similarity_groups = []
-        self.evaluation_classes = {}             # Used for evaluation of clustering quality if data in particular format
+        #self.similarity_groups = []
+        #self.coalescence_merged_similarity_groups = []  # Is a list of sets
+        #self.l2norm_merged_similarity_groups = []  # Is a list of sets
+        #self.merged_similarity_groups = None
+        #self.pruned_similarity_groups = []
+        #self.evaluation_classes = {}             # Used for evaluation of clustering quality if data in particular format
 
 
     def get_data_from_csv(self):
@@ -142,6 +110,7 @@ class LocalitySensitiveHashing(object):
             print(item)
 
     def initialize_hash_store(self):
+    #generate b*r hash functions and generate a dictionary to store hash values of our samples
         for x in range(self.how_many_hashes):
             hplane = numpy.random.uniform(low=-1.0, high=1.0, size=self.dim)
             hplane = hplane / numpy.linalg.norm(hplane)
@@ -162,16 +131,8 @@ class LocalitySensitiveHashing(object):
 
 
     def lsh_basic_for_nearest_neighbors(self):
-        '''
-        Regarding this implementation of LSH, note that each row of self.htable_rows corresponds to 
-        one hash function.  So if you have 3000 hash functions for 3000 different randomly chosen 
-        orientations of a hyperplane passing through the origin of the vector space in which the
-        numerical data is defined, this table has 3000 rows.  Each column of self.htable_rows is for
-        one data sample in the vector space.  So if you have 80 samples, then the table has 80 columns.
-        The output of this method consists of an interactive session in which the user is asked to
-        enter the symbolic name of a data record in the dataset processed by the LSH algorithm. The
-        method then returns the names (some if not all) of the nearest neighbors of that data point.
-        '''
+    #build a cluster for each sample and store all similarity samples' name in each cluster
+    #numbers of clusters are same as number of samples we have
         for (i,_) in enumerate(sorted(self.hash_store)):
             self.htable_rows[i] = BitVector(size = len(self._data_dict))
         for (i,hplane) in enumerate(sorted(self.hash_store)):
