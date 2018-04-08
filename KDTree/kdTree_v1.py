@@ -1,5 +1,6 @@
 # --*-- coding:utf-8 --*--  
-import numpy as np  
+import numpy as np
+
 class Node:  
     def __init__(self, data, lchild = None, rchild = None):  
         self.data = data  
@@ -15,7 +16,10 @@ class KdTree:
             m, n = np.shape(dataSet)    # get size of dataset  
             midIndex = int(m / 2) # get mid point  
             axis = depth % n    #judge which axis to seg plane;  
-            sortedDataSet = self.sort(dataSet, axis) # sort point along axis  
+            # sortedDataSet = self.BubleSort(dataSet, axis) # Buble sort point along axis
+            sortDataSet = dataSet[:]
+            sortedDataSet = sorted(sortDataSet, key = lambda x: x[axis])
+            print("the sort dataSet is" + str(sortedDataSet))
             node = Node(sortedDataSet[midIndex]) # create the node of mid point  
             # print sortedDataSet[midIndex]  
             leftDataSet = sortedDataSet[: midIndex]  
@@ -28,7 +32,7 @@ class KdTree:
         else:  
             return None  
   
-    def sort(self, dataSet, axis):  # buble sort  
+    def BubleSort(self, dataSet, axis):  # buble sort  
         sortDataSet = dataSet[:]    # copy a repica 
         m, n = np.shape(sortDataSet)  
         for i in range(m):  
@@ -36,9 +40,10 @@ class KdTree:
                 if (sortDataSet[j][axis] > sortDataSet[j+1][axis]):  
                     temp = sortDataSet[j]  
                     sortDataSet[j] = sortDataSet[j+1]  
-                    sortDataSet[j+1] = temp  
+                    sortDataSet[j+1] = temp
         print("the sort dataSet is" + str(sortDataSet))  
-        return sortDataSet  
+        return sortDataSet
+
   
     def preOrder(self, node):  
         if node != None:  
@@ -79,13 +84,8 @@ class KdTree:
     def dist(self, x1, x2): #calculate Euclidean distance  
         return ((np.array(x1) - np.array(x2)) ** 2).sum() ** 0.5  
   
-dataSet = [[2, 3, 7],  
-           [5, 4, 9],  
-           [9, 6, 2],  
-           [4, 7, 5],  
-           [8, 1, 1],  
-           [7, 2, 5]]  
-x = [5, 3, 4]  
+dataSet = [[2, 3, 7], [5, 4, 9], [9, 6, 5], [4, 7, 1], [8, 1, 2], [7, 2, 5]]  
+x = [5, 3, 2]  
 kdtree = KdTree()  
 tree = kdtree.create(dataSet, 0)  
 kdtree.preOrder(tree)
