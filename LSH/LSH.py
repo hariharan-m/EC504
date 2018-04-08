@@ -113,7 +113,7 @@ class LocalitySensitiveHashing(object):
     #generate b*r hash functions and generate a dictionary to store hash values of our samples
         for x in range(self.how_many_hashes):
             hplane = numpy.random.uniform(low=-1.0, high=1.0, size=self.dim)
-            hplane = hplane / numpy.linalg.norm(hplane)
+            hplane = hplane / numpy.linalg.norm(hplane)#standardlization hplane matrix
             self.hash_store[str(hplane)] = {'plus' : set(), 'minus' : set()}
 
     def hash_all_data(self):
@@ -124,6 +124,7 @@ class LocalitySensitiveHashing(object):
                        if sys.version_info[0] == 3 else hplane.translate(string.maketrans("][","  "))
                 bin_val = numpy.dot(list(map(convert, hplane_vals.split())), self._data_dict[sample])
                 bin_val = 1 if bin_val>= 0 else -1      
+                #if the dot vector is positive, move to plus list and vice versa
                 if bin_val>= 0:
                     self.hash_store[hplane]['plus'].add(sample)
                 else:
@@ -135,7 +136,7 @@ class LocalitySensitiveHashing(object):
     #numbers of clusters are same as number of samples we have
         for (i,_) in enumerate(sorted(self.hash_store)):
             self.htable_rows[i] = BitVector(size = len(self._data_dict))
-        for (i,hplane) in enumerate(sorted(self.hash_store)):
+        for (i,hplane) in enumerate(sorted(self.hash_store)):#transfer the above list of dictionaries to a 2-d matrix
             self.index_to_hplane_mapping[i] = hplane
             for (j,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):        
                 if sample in self.hash_store[hplane]['plus']:
@@ -147,14 +148,14 @@ class LocalitySensitiveHashing(object):
         for (i,_) in enumerate(sorted(self.hash_store)):
             if i % self.r == 0: print()
             print( str(self.htable_rows[i]) )
-        for (k,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):                
-            for band_index in range(self.b):
+        for (k,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):#go through every sample             
+            for band_index in range(self.b):#go through every hash band
                 bits_in_column_k = BitVector(bitlist = [self.htable_rows[i][k] for i in 
                                                      range(band_index*self.r, (band_index+1)*self.r)])
                 key_index = "band" + str(band_index) + " " + str(bits_in_column_k)
                 if key_index not in self.band_hash:
                     self.band_hash[key_index] = set()
-                    self.band_hash[key_index].add(sample)
+                    self.band_hash[key_index].add(sample)#put all similar samples' name in current cluster
                 else:
                     self.band_hash[key_index].add(sample)
         
@@ -165,7 +166,7 @@ class LocalitySensitiveHashing(object):
                 similarity_neighborhoods[sample_name].update( set(self.band_hash[key]) - set([sample_name]) )
         while True:
             sample_name = None
-            if sys.version_info[0] == 3:
+            if sys.version_info[0] == 3:#consider the difference between python3 and python2
                 sample_name =  input('''\nEnter the symbolic name for a data sample '''
                                      '''(must match names used in your datafile): ''')
             else:
