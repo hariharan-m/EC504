@@ -113,7 +113,8 @@ class KdTree:
                         travel(node.rchild, depth+1)  
                     else:  
                         travel(node.lchild, depth + 1)  
-        travel(tree)
+        if (k > 0):
+            travel(tree)
         while not que.empty():
             res.append(que.get()[1])
         return res
