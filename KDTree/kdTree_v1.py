@@ -108,7 +108,7 @@ class KdTree:
 
                 temp = que.get()
                 que.put(temp)  
-                if abs(x[axis] - node.data[axis]) <= abs(temp[0]) or que.qsize() < k:  #find whether there is closer point by using radius   
+                if abs(x[axis] - node.data[axis]) <= abs(temp[0]) or que.qsize() < k:  #find whether there is closer point in another subbranch   
                     if x[axis] < node.data[axis]:  
                         travel(node.rchild, depth+1)  
                     else:  
