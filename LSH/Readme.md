@@ -29,7 +29,7 @@ similarity_neighborhoods = lsh.lsh_basic_for_nearest_neighbors()
 
 ~~~~
 1. Running the test code in the file
-$ python LSH_v1.py
+$ python LSH.py
 2. Running the Example.py
 $ python Example.py
 ~~~~
