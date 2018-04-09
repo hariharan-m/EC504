@@ -32,6 +32,9 @@ similarity_neighborhoods = lsh.lsh_basic_for_nearest_neighbors()
 $ python LSH.py
 2. Running the Example.py
 $ python Example.py
+
+Example input Sample:
+Enter the symbolic name for a data sample (must match names used in your datafile): sample0_1
 ~~~~
 
 
