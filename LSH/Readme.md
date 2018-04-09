@@ -43,7 +43,7 @@ NAME
 Functions in Class LSH
 
     __init__(self, *args, **kwargs )
-        Get the keywords and initialize the variables and dictiionaries.
+        Get the keywords and initialize the variables and dictionaries.
         
         Keyword Arguments:
             datafile: data_for_lsh.csv
@@ -60,7 +60,7 @@ Functions in Class LSH
     hash_all_data()
           Hash all of data in the csv file with r*b number of hash functions.
     
-    lsh_basic_for_nearest_neighbors(self)
+    lsh_basic_for_nearest_neighbors()
           Implementation of the hyperplane based LSH algorithm to find nearest neighbors for data
 
 ~~~~
