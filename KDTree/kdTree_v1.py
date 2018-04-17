@@ -1,6 +1,7 @@
 # --*-- coding:utf-8 --*--  
 import numpy as np
 import queue as Q
+import sys
 
 class Node:  
     def __init__(self, data, lchild = None, rchild = None):  
@@ -20,13 +21,13 @@ class KdTree:
             # sortedDataSet = self.BubleSort(dataSet, axis) # Buble sort point along axis
             sortDataSet = dataSet[:]
             sortedDataSet = sorted(sortDataSet, key = lambda x: x[axis])
-            print("the sort dataSet is" + str(sortedDataSet))
+            # print("the sort dataSet is" + str(sortedDataSet))
             node = Node(sortedDataSet[midIndex]) # create the node of mid point  
             # print sortedDataSet[midIndex]  
             leftDataSet = sortedDataSet[: midIndex]  
             rightDataSet = sortedDataSet[midIndex+1 :]  
-            print("the left dataSet is" + str(leftDataSet))  
-            print("the right dataSet is" + str(rightDataSet))  
+            # print("the left dataSet is" + str(leftDataSet))  
+            # print("the right dataSet is" + str(rightDataSet))  
             node.lchild = self.create(leftDataSet, depth+1)   
             node.rchild = self.create(rightDataSet, depth+1)  
             return node  
@@ -42,13 +43,13 @@ class KdTree:
                     temp = sortDataSet[j]  
                     sortDataSet[j] = sortDataSet[j+1]  
                     sortDataSet[j+1] = temp
-        print("the sort dataSet is" + str(sortDataSet))  
+        # print("the sort dataSet is" + str(sortDataSet))  
         return sortDataSet
 
   
     def preOrder(self, node):  
         if node != None:  
-            print("tttt->%s" % node.data)  
+            # print("tttt->%s" % node.data)  
             self.preOrder(node.lchild)  
             self.preOrder(node.rchild)  
 
@@ -73,7 +74,7 @@ class KdTree:
                     self.nearestPoint = node.data  
                     self.nearestValue = distNodeAndX  
   
-                print(node.data, depth, self.nearestValue, node.data[axis], x[axis])  
+                # print(node.data, depth, self.nearestValue, node.data[axis], x[axis])  
                 if (abs(x[axis] - node.data[axis]) <= self.nearestValue):  #find whether there is closer point by using radius   
                     if x[axis] < node.data[axis]:  
                         travel(node.rchild, depth+1)  
@@ -128,10 +129,24 @@ class KdTree:
 
 # dataSet = [[2, 3, 7], [5, 4, 9], [9, 6, 5], [4, 7, 1], [8, 1, 2], [7, 2, 5]]  
 # x = [5, 3, 2]
-dataSet = [[2, 3], [5, 4], [9, 6], [4, 7], [8, 1], [7, 2]]  
-x = [5, 3]    
+# dataSet = [[2, 3], [5, 4], [9, 6], [4, 7], [8, 1], [7, 2]]  
+# x = [5, 3]
+dataSet = []
+for line in open("/Users/yangzhiyi/Desktop/EC504/project/test.txt"):
+    line = line[:-1]
+    lineChar = line.split()
+    linC = []
+    for char in lineChar:
+        linC.append(int(char))
+    dataSet.append(linC)
+
+x = dataSet[10]
+# print(x)    
 kdtree = KdTree()  
 tree = kdtree.create(dataSet, 0)  
 kdtree.preOrder(tree)
-print("The NN of " + str(x) + " is " + str(kdtree.search(tree, x)))
-print("The 3NN of " + str(x) + " is " + str(kdtree.Ksearch(tree, x, 3)))
+print("The NN of " + str(x) + " is ")
+print(str(kdtree.search(tree, x)))
+print()
+print("The 3NN of " + str(x) + " is ")
+print(str(kdtree.Ksearch(tree, x, 3)))
