@@ -319,12 +319,28 @@ class LSH(object):
             self.merged_similarity_groups_with_l2norm = retained_similarity_groups
             for group in self.merged_similarity_groups_with_l2norm:
                 print( str(group) )
-            return self.merged_similarity_groups_with_l2norm
+           # return self.merged_similarity_groups_with_l2norm
         else:
             print('''\n\nNo sample based merging carried out since the number of clusters yielded by coalescence '''
                   '''is fewer than the expected number of clusters.''')
-            return similarity_groups
-
+           # return similarity_groups
+        while True:
+            sample_name = None
+            # For python3
+            if sys.version_info[0] == 3:
+                sample_name =  input('''\nEnter the symbolic name for a data sample '''
+                                     '''(Enter quit to Exit): ''')
+            # For python2
+            else:
+                sample_name = raw_input('''\nEnter the symbolic name for a data sample '''
+                                        '''(Enter quit to Exit): ''')
+            if sample_name=="quit":
+                break
+            else:
+                for each in merged_similarity_groups:
+                    if sample_name in each:
+                        print( "\nthe sample is in cluster:\n",each)
+                        #return each
 ##############
 
 
