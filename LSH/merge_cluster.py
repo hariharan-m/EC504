@@ -279,9 +279,9 @@ class LSH(object):
 if __name__ == '__main__':
     lsh = LSH(
                                     datafile = "data_for_lsh.csv",  
-                                    dim = 10,
-                                    r = 8,                             
-                                    b = 20, 
+                                    dim = 100,
+                                    r = 50,                             
+                                    b = 100, 
                                     expected_num_of_clusters = 20,
                                   )
     lsh.get_data_from_csv()
