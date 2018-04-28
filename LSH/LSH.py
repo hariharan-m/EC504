@@ -14,14 +14,14 @@ from BitVector import *
 # We assume the raw data stored with name sample0_0 or sample1_8
 # We store data with this name just for testing if the program works well
 # This function returns the second integer of our sample name
-def sample_index(sample_name):
-    m = re.search(r'_(.+)$', sample_name)
-    return int(m.group(1))
+#def sample_index(sample_name):
+#    m = re.search(r'_(.+)$', sample_name)
+#    return int(m.group(1))
 
 # This function returns the first integer of our sample name
-def sample_group_index(sample_group_name):
-    m = re.search(r'^.*(\d+)', sample_group_name)
-    return int(m.group(1))
+#def sample_group_index(sample_group_name):
+#    m = re.search(r'^.*(\d+)', sample_group_name)
+#    return int(m.group(1))
 
 #  This function returns the index of the hashband
 def band_hash_group_index(block_name):
@@ -111,6 +111,7 @@ class LSH(object):
             f.close()
         self.how_many_data_samples = i+1
         self._data_dict = data_dict
+        return self._data_dict
 
     def initialize_hash_store(self):
     # Generate b*r hash functions and generate a dictionary to store hash values of our samples
@@ -131,11 +132,10 @@ class LSH(object):
                     self.hash_store[hplane]['plus'].add(sample)
                 else:
                     self.hash_store[hplane]['minus'].add(sample)
-
-
     def lsh_basic_for_nearest_neighbors(self):
     # Generate a cluster for each sample and store all similarity samples' name in each cluster
     # Numbers of clusters = Number of Samples
+    # Not using this function in final version
         for (i,_) in enumerate(sorted(self.hash_store)):
             self.htable_rows[i] = BitVector(size = len(self._data_dict))
         for (i,hplane) in enumerate(sorted(self.hash_store)):
@@ -181,7 +181,6 @@ class LSH(object):
             else:
                 print( "\nThe name you entered does not match any names in the database.  Try again." )
         return similarity_neighborhoods
-
     def display_contents_of_all_hash_bins_pre_lsh(self):
         for hplane in self.hash_store:
             print( "\n\n hyperplane: %s" % str(hplane) )
@@ -191,28 +190,23 @@ class LSH(object):
 ####################
 
     def lsh_basic_for_neighborhood_clusters(self):
-        '''
-        This method is a variation on the method lsh_basic_for_nearest_neighbors() in the following
-        sense: Whereas the previous method outputs a hash table whose keys are the data sample names
-        and whose values are the immediate neighbors of the key sample names, this method merges
-        the keys with the values to create neighborhood clusters.  These clusters are returned as 
-        a list of similarity groups, with each group being a set.
-        '''
+        #this method merges the keys with the values to create neighborhood clusters.  
+        #These clusters are returned as a list of similarity groups, with each group being a set
         for (i,_) in enumerate(sorted(self.hash_store)):
             self.htable_rows[i] = BitVector(size = len(self._data_dict))
         for (i,hplane) in enumerate(sorted(self.hash_store)):
             self.index_to_hplane_mapping[i] = hplane
-            for (j,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):        
+            for (j,sample) in enumerate(self._data_dict):        
                 if sample in self.hash_store[hplane]['plus']:
                     self.htable_rows[i][j] =  1
                 elif sample in self.hash_store[hplane]['minus']:
                     self.htable_rows[i][j] =  0
                 else:
                     raise Exception("An untenable condition encountered")
-        for (i,_) in enumerate(sorted(self.hash_store)):
+        for (i,_) in enumerate(self.hash_store):
             if i % self.r == 0: print
             print( str(self.htable_rows[i]) ) 
-        for (k,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):                
+        for (k,sample) in enumerate(self._data_dict):                
             for band_index in range(self.b):
                 bits_in_column_k = BitVector(bitlist = [self.htable_rows[i][k] for i in 
                                                      range(band_index*self.r, (band_index+1)*self.r)])
@@ -224,13 +218,13 @@ class LSH(object):
                     self.band_hash[key_index].add(sample)
 
         similarity_neighborhoods = {sample_name : set() for sample_name in 
-                                         sorted(self._data_dict.keys(), key=lambda x: sample_index(x))}
+                                         self._data_dict.keys()}
         for key in sorted(self.band_hash, key=lambda x: band_hash_group_index(x)):        
             for sample_name in self.band_hash[key]:
                 similarity_neighborhoods[sample_name].update( set(self.band_hash[key]) - set([sample_name]) )
         print("\n\nSimilarity neighborhoods calculated by the basic LSH algo:")
-        for key in sorted(similarity_neighborhoods, key=lambda x: sample_index(x)):
-            print( "\n  %s   =>  %s" % (key, str(sorted(similarity_neighborhoods[key], key=lambda x: sample_index(x)))) )
+        for key in sorted(similarity_neighborhoods):
+            print( "\n  %s   =>  %s" % (key, str(sorted(similarity_neighborhoods[key]))) )
             simgroup = set(similarity_neighborhoods[key])
             simgroup.add(key)
             self.similarity_groups.append(simgroup)
@@ -319,18 +313,19 @@ class LSH(object):
             self.merged_similarity_groups_with_l2norm = retained_similarity_groups
             for group in self.merged_similarity_groups_with_l2norm:
                 print( str(group) )
-           # return self.merged_similarity_groups_with_l2norm
+            merged_similarity_groups=self.merged_similarity_groups_with_l2norm
+  #          return self.merged_similarity_groups_with_l2norm
         else:
             print('''\n\nNo sample based merging carried out since the number of clusters yielded by coalescence '''
                   '''is fewer than the expected number of clusters.''')
-           # return similarity_groups
+  #          return similarity_groups
         while True:
             sample_name = None
             # For python3
             if sys.version_info[0] == 3:
                 sample_name =  input('''\nEnter the symbolic name for a data sample '''
                                      '''(Enter quit to Exit): ''')
-            # For python2
+        # For python2
             else:
                 sample_name = raw_input('''\nEnter the symbolic name for a data sample '''
                                         '''(Enter quit to Exit): ''')
@@ -357,15 +352,8 @@ if __name__ == '__main__':
                                     r = 5,                             
                                     b = 20,                 
                                   )
-    lsh.get_data_from_csv()
-    lsh.initialize_hash_store()
-    lsh.hash_all_data()
-    lsh.display_contents_of_all_hash_bins_pre_lsh()
-    similarity_neighborhoods = lsh.lsh_basic_for_nearest_neighbors()
-
-    
-
-
-
-
-
+    print(lsh.get_data_from_csv())
+    #lsh.initialize_hash_store()
+    #lsh.hash_all_data()
+    #lsh.display_contents_of_all_hash_bins_pre_lsh()
+    #similarity_neighborhoods = lsh.lsh_basic_for_nearest_neighbors()
