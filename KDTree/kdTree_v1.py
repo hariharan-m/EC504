@@ -132,7 +132,7 @@ class KdTree:
 # dataSet = [[2, 3], [5, 4], [9, 6], [4, 7], [8, 1], [7, 2]]  
 # x = [5, 3]
 dataSet = []
-for line in open("/Users/yangzhiyi/Desktop/EC504/project/test.txt"):
+for line in open("test.txt"):
     line = line[:-1]
     lineChar = line.split()
     linC = []

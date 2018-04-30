@@ -50,6 +50,7 @@ class BOVHelpers:
 
 		self.mega_histogram = np.array([np.zeros(self.n_clusters) for i in range(n_images)])
 		old_count = 0
+		myfile = open('xyz.txt', 'w')
 		for i in range(n_images):
 			l = len(descriptor_list[i])
 			# print("des length:",l)
@@ -63,10 +64,16 @@ class BOVHelpers:
 			# print("image number:", i, "label", n_label[i],"name:", n_names.get(i))
 			print(n_names.get(i))
 			for leng in range(len(self.mega_histogram[i].astype(int))):
-				print((self.mega_histogram[i][leng].astype(int)), end=' ')				
+				print((self.mega_histogram[i][leng].astype(int)),end=' ')
 			print()
+			# writing
+			to_write = n_names.get(i) + "\t" + str(list(self.mega_histogram[i])) + "\n"
+			# np.savetxt(myfile,n_label[i])
+			myfile.write(to_write) 
+			# np.savetxt(myfile,self.mega_histogram[i])
 			# print(len(self.mega_histogram[i].astype(int)))
 		# print("Vocabulary Histogram Generated")
+		myfile.close()
 
 
 	def standardize(self, std=None):
