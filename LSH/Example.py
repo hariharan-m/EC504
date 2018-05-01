@@ -1,10 +1,10 @@
 from LSH import *
 
 lsh = LSH( 
-           datafile = "data_for_lsh.csv",
-           dim = 10,
-           r = 50,                
-           b = 100,               
+           datafile = "xyz_1000_new.csv",
+           dim = 50,
+           r = 20,                
+           b = 10,               
       )
 lsh.get_data_from_csv()
 lsh.initialize_hash_store()
