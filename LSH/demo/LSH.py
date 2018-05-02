@@ -162,9 +162,9 @@ class LSH(object):
                     self.htable_rows[i][j] =  0
                 else:
                     raise Exception("An untenable condition encountered")
-        for (i,_) in enumerate(sorted(self.hash_store)):
-            if i % self.r == 0: print()
-            print( str(self.htable_rows[i]) )
+        # for (i,_) in enumerate(sorted(self.hash_store)):
+        #     if i % self.r == 0: print()
+        #     print( str(self.htable_rows[i]) )
         for (k,sample) in enumerate(self._data_dict):
         # for (k,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):                
             for band_index in range(self.b):
@@ -176,15 +176,15 @@ class LSH(object):
                     self.band_hash[key_index].add(sample)
                 else:
                     self.band_hash[key_index].add(sample)
-        
         # similarity_neighborhoods = {sample_name : set() for sample_name in 
         #                                  sorted(self._data_dict.keys(), key=lambda x: sample_index(x))}
-            similarity_neighborhoods = {sample_name : set() for sample_name in 
+        similarity_neighborhoods = {sample_name : set() for sample_name in 
                                          self._data_dict.keys()}
+        
         for key in sorted(self.band_hash, key=lambda x: band_hash_group_index(x)):        
             for sample_name in self.band_hash[key]:
                 similarity_neighborhoods[sample_name].update( set(self.band_hash[key]) - set([sample_name]) )
-
+        # print(similarity_neighborhoods)
         if in_sample_name in similarity_neighborhoods:
             return str(similarity_neighborhoods[in_sample_name]) 
         else:
@@ -243,11 +243,11 @@ class LSH(object):
 
     #     return similarity_neighborhoods
 
-    def display_contents_of_all_hash_bins_pre_lsh(self):
-        for hplane in self.hash_store:
-            print( "\n\n hyperplane: %s" % str(hplane) )
-            print( "\n samples in plus bin: %s" % str(self.hash_store[hplane]['plus']) )
-            print( "\n samples in minus bin: %s" % str(self.hash_store[hplane]['minus']) )
+    # def display_contents_of_all_hash_bins_pre_lsh(self):
+    #     for hplane in self.hash_store:
+    #         print( "\n\n hyperplane: %s" % str(hplane) )
+    #         print( "\n samples in plus bin: %s" % str(self.hash_store[hplane]['plus']) )
+    #         print( "\n samples in minus bin: %s" % str(self.hash_store[hplane]['minus']) )
 
 
 
@@ -274,9 +274,9 @@ class LSH(object):
                     self.htable_rows[i][j] =  0
                 else:
                     raise Exception("An untenable condition encountered")
-        for (i,_) in enumerate(sorted(self.hash_store)):
-            if i % self.r == 0: print
-            print( str(self.htable_rows[i]) ) 
+        # for (i,_) in enumerate(sorted(self.hash_store)):
+        #     if i % self.r == 0: print
+        #     print( str(self.htable_rows[i]) ) 
         for (k,sample) in enumerate(self._data_dict):
         # for (k,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):                
             for band_index in range(self.b):
@@ -359,32 +359,36 @@ class LSH(object):
         return similarity_group_mean_values
 
     def search_for_similar_set(self, similarity_group_mean_values, new_data):
-        min_dist = 99999
+        min_dist = 999999999
         for mean_val in similarity_group_mean_values:
             dist = l2norm(similarity_group_mean_values[mean_val],new_data)
-            print('dist:')
-            print(dist)
+            # print('dist:')
+            # print(dist)
             if min_dist>dist:
                 min_dist =  dist
                 min_set = mean_val  
-        print('min_dist')
-        print(min_dist)
+        # print('min_dist')
+        # print(min_dist)
         return min_set
 #------------------------------------  Test Code Follows  -------------------------------------
 
 if __name__ == '__main__':
-    lsh = LSH( datafile = "data_for_lsh.csv",  
-                                    dim = 10,
-                                    r = 50,                             
-                                    b = 100,
+    lsh = LSH( datafile = "xyz_brain_accod.csv",  
+                                    dim = 50,
+                                    r = 20,                             
+                                    b = 40,
 
                                   )
     lsh.get_data_from_csv()
     lsh.initialize_hash_store()
     lsh.hash_all_data()
-    lsh.display_contents_of_all_hash_bins_pre_lsh()
-    similarity_neighborhoods = lsh.lsh_basic_for_nearest_neighbors('sample0_1')
+    # lsh.display_contents_of_all_hash_bins_pre_lsh()
+    start = timeit.default_timer()
+    similarity_neighborhoods = lsh.lsh_basic_for_nearest_neighbors('train/accordion_image_0005.jpg')
+    end = timeit.default_timer()
+    print('====================')
     print(similarity_neighborhoods)
+    print('Running time is '+ str(end-start) + 's')
     # similarity_groups = lsh.lsh_basic_for_neighborhood_clusters()
 
     # coalesced_similarity_groups = lsh.merge_similarity_groups_with_coalescence( similarity_groups )
