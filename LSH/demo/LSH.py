@@ -4,6 +4,8 @@ import re
 import string
 import sys,os,signal
 from BitVector import *
+import timeit
+
 
 # EC504 LSH for similar image search
 # LSH structure
@@ -14,11 +16,11 @@ from BitVector import *
 # We assume the raw data stored with name sample0_0 or sample1_8
 # We store data with this name just for testing if the program works well
 # This function returns the second integer of our sample name
-def sample_index(sample_name):
-    #m = re.search(r'(\d\d\d\d)', sample_name)
-    m = re.search(r'_(.+)$', sample_name)
-    # m = re.search(r'(\d+)$',str(sample_name))
-    return int(m.group(1))
+# def sample_index(sample_name):
+#     #m = re.search(r'(\d\d\d\d)', sample_name)
+#     m = re.search(r'_(.+)$', sample_name)
+#     # m = re.search(r'(\d+)$',str(sample_name))
+#     return int(m.group(1))
 
 # This function returns the first integer of our sample name
 def sample_group_index(sample_group_name):
@@ -134,8 +136,15 @@ class LSH(object):
                 else:
                     self.hash_store[hplane]['minus'].add(sample)
 
-
-
+    # def hash_one_data(self, new_data):
+    #     plus_minus = []
+    #     for hplane in self.hash_store:
+    #         hplane_vals = hplane.translate(bytes.maketrans(b"][", b"  ")) \
+    #                if sys.version_info[0] == 3 else hplane.translate(string.maketrans("][","  "))
+    #         bin_val = numpy.dot(list(map(convert, hplane_vals.split())), new_data)
+    #         bin_val = 1 if bin_val>= 0 else -1
+    #         plus_minus.append(bin_val)
+    #     return puls_minus
 
 
     def lsh_basic_for_nearest_neighbors(self,in_sample_name):
@@ -145,7 +154,8 @@ class LSH(object):
             self.htable_rows[i] = BitVector(size = len(self._data_dict))
         for (i,hplane) in enumerate(sorted(self.hash_store)):
             self.index_to_hplane_mapping[i] = hplane
-            for (j,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):        
+            for (j,sample) in enumerate(self._data_dict):
+            # for (j,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):        
                 if sample in self.hash_store[hplane]['plus']:
                     self.htable_rows[i][j] =  1
                 elif sample in self.hash_store[hplane]['minus']:
@@ -155,7 +165,8 @@ class LSH(object):
         for (i,_) in enumerate(sorted(self.hash_store)):
             if i % self.r == 0: print()
             print( str(self.htable_rows[i]) )
-        for (k,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):                
+        for (k,sample) in enumerate(self._data_dict):
+        # for (k,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):                
             for band_index in range(self.b):
                 bits_in_column_k = BitVector(bitlist = [self.htable_rows[i][k] for i in 
                                                      range(band_index*self.r, (band_index+1)*self.r)])
@@ -166,8 +177,10 @@ class LSH(object):
                 else:
                     self.band_hash[key_index].add(sample)
         
-        similarity_neighborhoods = {sample_name : set() for sample_name in 
-                                         sorted(self._data_dict.keys(), key=lambda x: sample_index(x))}
+        # similarity_neighborhoods = {sample_name : set() for sample_name in 
+        #                                  sorted(self._data_dict.keys(), key=lambda x: sample_index(x))}
+            similarity_neighborhoods = {sample_name : set() for sample_name in 
+                                         self._data_dict.keys()}
         for key in sorted(self.band_hash, key=lambda x: band_hash_group_index(x)):        
             for sample_name in self.band_hash[key]:
                 similarity_neighborhoods[sample_name].update( set(self.band_hash[key]) - set([sample_name]) )
@@ -236,6 +249,8 @@ class LSH(object):
             print( "\n samples in plus bin: %s" % str(self.hash_store[hplane]['plus']) )
             print( "\n samples in minus bin: %s" % str(self.hash_store[hplane]['minus']) )
 
+
+
 ####################
 
     def lsh_basic_for_neighborhood_clusters(self):
@@ -251,7 +266,8 @@ class LSH(object):
         for (i,hplane) in enumerate(sorted(self.hash_store)):
             self.index_to_hplane_mapping[i] = hplane
             # for (j,sample) in enumerate(sorted(self._data_dict)):
-            for (j,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):        
+            # for (j,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):
+            for (j,sample) in enumerate(self._data_dict):        
                 if sample in self.hash_store[hplane]['plus']:
                     self.htable_rows[i][j] =  1
                 elif sample in self.hash_store[hplane]['minus']:
@@ -261,8 +277,8 @@ class LSH(object):
         for (i,_) in enumerate(sorted(self.hash_store)):
             if i % self.r == 0: print
             print( str(self.htable_rows[i]) ) 
-        # for (k,sample) in enumerate(sorted(self._data_dict)):
-        for (k,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):                
+        for (k,sample) in enumerate(self._data_dict):
+        # for (k,sample) in enumerate(sorted(self._data_dict, key=lambda x: sample_index(x))):                
             for band_index in range(self.b):
                 bits_in_column_k = BitVector(bitlist = [self.htable_rows[i][k] for i in 
                                                      range(band_index*self.r, (band_index+1)*self.r)])
@@ -273,16 +289,17 @@ class LSH(object):
                 else:
                     self.band_hash[key_index].add(sample)
 
-        # similarity_neighborhoods = {sample_name : set() for sample_name in 
-        #                                  sorted(self._data_dict.keys())}
         similarity_neighborhoods = {sample_name : set() for sample_name in 
-                                         sorted(self._data_dict.keys(), key=lambda x: sample_index(x))}
+                                         self._data_dict.keys()}
+        # similarity_neighborhoods = {sample_name : set() for sample_name in 
+        #                                  sorted(self._data_dict.keys(), key=lambda x: sample_index(x))}
         for key in sorted(self.band_hash, key=lambda x: band_hash_group_index(x)):        
             for sample_name in self.band_hash[key]:
                 similarity_neighborhoods[sample_name].update( set(self.band_hash[key]) - set([sample_name]) )
         print("\n\nSimilarity neighborhoods calculated by the basic LSH algo:")
-        for key in sorted(similarity_neighborhoods, key=lambda x: sample_index(x)):
-            print( "\n  %s   =>  %s" % (key, str(sorted(similarity_neighborhoods[key], key=lambda x: sample_index(x)))) )
+        for key in similarity_neighborhoods:
+        # for key in sorted(similarity_neighborhoods, key=lambda x: sample_index(x)):
+            # print( "\n  %s   =>  %s" % (key, str(sorted(similarity_neighborhoods[key], key=lambda x: sample_index(x)))) )
             simgroup = set(similarity_neighborhoods[key])
             simgroup.add(key)
             self.similarity_groups.append(simgroup)
@@ -339,52 +356,20 @@ class LSH(object):
             group_mean = [float(sum(col))/len(col) for col in zip(*vector_list)]
             similarity_group_mean_values[str(group)] = group_mean
             
-        new_similarity_groups = []
-        key_to_small_group_mapping = {}
-        key_to_large_group_mapping = {}
-        stringified_list = [str(item) for item in similarity_groups]
-        small_group_pool_for_a_given_large_group = {x : [] for x in stringified_list}
-        if len(similarity_groups) > self.num_clusters:
-            ordered_sim_groups_by_size = sorted(similarity_groups, key=lambda x: len(x), reverse=True)
-            retained_similarity_groups = ordered_sim_groups_by_size[:self.num_clusters]
-            straggler_groups = ordered_sim_groups_by_size[self.num_clusters :]
-            print( "\n\nStraggler groups: %s" % str(straggler_groups) )
-            samples_in_stragglers =  sum([list(group) for group in straggler_groups], [])
-            print( "\n\nSamples in stragglers: %s" %  str(samples_in_stragglers) )
-            straggler_sample_to_closest_retained_group_mapping = {sample : None for sample in samples_in_stragglers}
-            for sample in samples_in_stragglers:
-                dist_to_closest_retained_group_mean, closest_retained_group = None, None
-                for group in retained_similarity_groups:
-                        dist = l2norm(similarity_group_mean_values[str(group)], self._data_dict[sample])
-                        if dist_to_closest_retained_group_mean is None:
-                            dist_to_closest_retained_group_mean = dist
-                            closest_retained_group = group
-                        elif dist < dist_to_closest_retained_group_mean:
-                            dist_to_closest_retained_group_mean = dist
-                            closest_retained_group = group
-                        else:
-                            pass
-                straggler_sample_to_closest_retained_group_mapping[sample] = closest_retained_group
-            for sample in samples_in_stragglers:
-                straggler_sample_to_closest_retained_group_mapping[sample].add(sample)
-            print( "\n\nDisplaying sample based l2 norm merged similarity groups:" )
-            self.merged_similarity_groups_with_l2norm = retained_similarity_groups
-            for group in self.merged_similarity_groups_with_l2norm:
-                print( str(group) )
-            return self.merged_similarity_groups_with_l2norm
-        else:
-            print('''\n\nNo sample based merging carried out since the number of clusters yielded by coalescence '''
-                  '''is fewer than the expected number of clusters.''')
-            return similarity_groups
+        return similarity_group_mean_values
 
-##############
-
-
-
-
-
-
-
+    def search_for_similar_set(self, similarity_group_mean_values, new_data):
+        min_dist = 99999
+        for mean_val in similarity_group_mean_values:
+            dist = l2norm(similarity_group_mean_values[mean_val],new_data)
+            print('dist:')
+            print(dist)
+            if min_dist>dist:
+                min_dist =  dist
+                min_set = mean_val  
+        print('min_dist')
+        print(min_dist)
+        return min_set
 #------------------------------------  Test Code Follows  -------------------------------------
 
 if __name__ == '__main__':
