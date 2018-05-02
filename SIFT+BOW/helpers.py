@@ -50,7 +50,7 @@ class BOVHelpers:
 
 		self.mega_histogram = np.array([np.zeros(self.n_clusters) for i in range(n_images)])
 		old_count = 0
-		myfile = open('xyz.txt', 'w')
+		myfile = open('xyz_test.csv', 'w')
 		for i in range(n_images):
 			l = len(descriptor_list[i])
 			# print("des length:",l)
@@ -62,12 +62,14 @@ class BOVHelpers:
 				self.mega_histogram[i][idx] += 1
 			old_count += l
 			# print("image number:", i, "label", n_label[i],"name:", n_names.get(i))
-			print(n_names.get(i))
+			name = n_names.get(i).split("/") 
+			print(name[0]+'/'+name[1]+'_'+name[2], end = ' ')
 			for leng in range(len(self.mega_histogram[i].astype(int))):
 				print((self.mega_histogram[i][leng].astype(int)),end=' ')
 			print()
-			# writing
-			to_write = n_names.get(i) + "\t" + str(list(self.mega_histogram[i])) + "\n"
+			# writing map(str, list)
+			s = ",".join(map(str,list(self.mega_histogram[i])))
+			to_write = name[0]+'/'+name[1]+'_'+name[2] + "," + s + "\n"
 			# np.savetxt(myfile,n_label[i])
 			myfile.write(to_write) 
 			# np.savetxt(myfile,self.mega_histogram[i])
@@ -97,8 +99,19 @@ class BOVHelpers:
 		M samples x N features for sklearn
 
 		"""
+		k = 0
+		# print(((l)))
 		vStack = np.array(l[0])
+		# print(((vStack)))
 		for remaining in l[1:]:
+			k = k+1
+			# print(k)
+			# print(((remaining)),k)
+			# if remaining == None:
+				# continue
+			# else:
+				# if (remaining) != None:
+				# print(len(vStack), len(remaining))
 			vStack = np.vstack((vStack, remaining))
 		self.descriptor_vstack = vStack.copy()
 		return vStack

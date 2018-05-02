@@ -52,6 +52,7 @@ class BOV:
         # print("des:",len(self.descriptor_list))
         # print("train names:",self.name_dict)
         # perform clustering
+        # print(len(self.descriptor_list))
         bov_descriptor_stack = self.bov_helper.formatND(self.descriptor_list)
         self.bov_helper.cluster()
         self.bov_helper.developVocabulary(n_label=self.train_labels, n_names=self.names,
@@ -183,7 +184,7 @@ if __name__ == '__main__':
     args = vars(parser.parse_args())
     # print(args)
 
-    bov = BOV(no_clusters=100)
+    bov = BOV(no_clusters=50)
 
     # set training paths
     bov.train_path = args['train_path']
