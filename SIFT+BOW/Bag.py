@@ -1,3 +1,4 @@
+# Refrenc: http://scikit-learn.org/stable/modules/feature_extraction.html and https://kushalvyas.github.io/BOV.html
 import cv2
 import numpy as np
 from glob import glob
