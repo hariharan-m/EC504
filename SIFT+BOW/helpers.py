@@ -19,7 +19,7 @@ class ImageHelpers:
 		return [keypoints, descriptors]
 
 
-class BOVHelpers:
+class Bag_of_words_helpers:
 	def __init__(self, n_clusters = 20):
 		self.n_clusters = n_clusters
 		self.kmeans_obj = KMeans(n_clusters = n_clusters)

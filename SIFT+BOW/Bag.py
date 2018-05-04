@@ -6,13 +6,13 @@ from helpers import *
 from matplotlib import pyplot as plt
 import re
 
-class BOV:
+class Bag_of_words:
     def __init__(self, no_clusters):
         self.no_clusters = no_clusters
         self.train_path = None
         self.test_path = None
         self.im_helper = ImageHelpers()
-        self.bov_helper = BOVHelpers(no_clusters)
+        self.bov_helper = Bag_of_words_helpers(no_clusters)
         self.file_helper = FileHelpers()
         self.images = None
         self.trainImageCount = 0
@@ -101,48 +101,12 @@ class BOV:
         # print(( "Image belongs to class : ", self.name_dict[str(int(lb[0]))]
         return lb
 
-    # def testModel(self):
-    #     """ 
-    #     This method is to test the trained classifier
-
-    #     read all images from testing path 
-    #     use BOVHelpers.predict() function to obtain classes of each image
-
-    #     """
-
-    #     self.testImages, self.testImageCount = self.file_helper.getFiles(
-    #         self.test_path)
-
-    #     predictions = []
-
-    #     for word, imlist in self.testImages.items():
-    #         print("processing ", word)
-    #         for im in imlist:
-    #             # print( imlist[0].shape, imlist[1].shape
-    #             # print( im.shape)
-    #             cl = self.recognize(im)
-    #             print(cl)
-    #             predictions.append({
-    #                 'image': im,
-    #                 'class': cl,
-    #                 'object_name': self.name_dict[str(int(cl[0]))]
-    #             })
-
-    #     # print( predictions)
-    #     for each in predictions:
-    #         # cv2.imshow(each['object_name'], each['image'])
-    #         # cv2.waitKey()
-    #         # cv2.destroyWindow(each['object_name'])
-    #         #
-    #         plt.imshow(cv2.cvtColor(each['image'], cv2.COLOR_GRAY2RGB))
-    #         plt.title(each['object_name'])
-    #         plt.show()
     def testModel(self):
         """ 
         This method is to test the trained classifier
 
         read all images from testing path 
-        use BOVHelpers.predict() function to obtain classes of each image
+        use Bag_of_words_helpers.predict() function to obtain classes of each image
 
         """
 
@@ -157,10 +121,6 @@ class BOV:
             'object_name': self.name_dict[str(int(cl[0]))]
         })
         for each in predictions:
-            # cv2.imshow(each['object_name'], each['image'])
-            # cv2.waitKey()
-            # cv2.destroyWindow(each['object_name'])
-            #
             print("class is:", each['object_name'])
             plt.imshow(cv2.cvtColor(each['image'], cv2.COLOR_GRAY2RGB))
             plt.title(each['object_name'])
@@ -184,20 +144,20 @@ if __name__ == '__main__':
     args = vars(parser.parse_args())
     # print(args)
 
-    bov = BOV(no_clusters=50)
+    Bag_words = Bag_of_words(no_clusters=50)
 
     # set training paths
-    bov.train_path = args['train_path']
+    Bag_words.train_path = args['train_path']
     # set testing paths
-    # bov.test_path = args['test_path']
+    # Bag_words.test_path = args['test_path']
     # train the model
-    bov.trainModel()
+    Bag_words.trainModel()
     # test model
     while True:
-        com = input('Test Image path with name and image extension:')
+        com = input('Please enter test Image path with name and image extension, To exit, enter "exit":')
         # print(com)
         if com == 'exit':
             break
         else:
-            bov.test_path = com
-            bov.testModel()
+            Bag_words.test_path = com
+            Bag_words.testModel()
