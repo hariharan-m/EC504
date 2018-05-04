@@ -41,7 +41,7 @@ $ python LSH.py
 2. Running the writeJson.py and search.py
 $ python writeJson.py
   Store the clusters in a json file for further search
-  python search.py
+$ python search.py
   Search a new data vector's nearest nerghborhood
   (New data must have same dimenstion as the samples in the dataset
 
